@@ -100,9 +100,9 @@ public class DataStorage : MonoBehaviour {
     /**
      * Downloads data from the scouting server, for example version info and event and team lists.
      **/
-     IEnumerable downloadJSON()
+    IEnumerable downloadJSON()
     {
-        UnityWebRequest wwwRequest = UnityWebRequest.Get(serverBaseURL+"/api/v1/syncDownload.php");
+        UnityWebRequest wwwRequest = UnityWebRequest.Get(serverBaseURL + "/api/v1/syncDownload.php");
         yield return wwwRequest.SendWebRequest();
 
         if (wwwRequest.error != null)
@@ -110,6 +110,7 @@ public class DataStorage : MonoBehaviour {
             object[] data = JsonUtility.FromJson<object[]>(wwwRequest.downloadHandler.text);
         }
 
+    }
 
         /**
          * Uploads the data to the remote server set in the dataPOSTurl variable
@@ -165,4 +166,38 @@ public class DataStorage : MonoBehaviour {
             }
 		}
 	}
+}
+
+[System.Serializable]
+class SyncData
+{
+    public string[] CurrentVersion;
+    public EventData[] Events;
+    public EventTeamList[] TeamsByEvent
+}
+
+[System.Serializable]
+class EventData {
+    public string city;
+    public string country;
+    public DistrictInfo district;
+    public string end_date;
+    public string event_code;
+    public string event_type;
+    public string key;
+    public string name;
+    public string start_date;
+    public string year;
+}
+
+[System.Serializable]
+class EventTeamList
+{
+
+}
+
+[System.Serializable]
+class DistrictInfo
+{
+
 }
