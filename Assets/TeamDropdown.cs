@@ -24,7 +24,7 @@ public class TeamDropdown : DataInput
     {
         if (dropdown.captionText.text == "ERR - Please Sync") return;
         string teamNumber = dropdown.captionText.text.Split(' ')[0];
-        DS.addData("TeamNumber", "0", true);
+        DS.addData("TeamNumber", teamNumber.Split(' ')[0], true);
     }
 
     public void clear()

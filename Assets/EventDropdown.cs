@@ -22,7 +22,6 @@ public class EventDropdown : DataInput {
     void LateUpdate()
     {
         if (dropdown.captionText.text == "ERR - Please Sync") return;
-        string teamNumber = dropdown.captionText.text.Split(' ')[0];
         DS.addData("EventKey", ETD.getSelectedEvent().key, true);
     }
 
@@ -46,11 +45,22 @@ public class EventDropdown : DataInput {
 
     public override void changeData(object change)
     {
-        throw new NotImplementedException();
+        if (ETD.getEvent(change.ToString()) != null)
+        {
+            EventData newEvent = ETD.getEvent(change.ToString());
+            for (int i = 0; i < dropdown.options.Count; i++)
+            {
+                if (ETD.getEvent(dropdown.options[i].text.Split(' ')[0]) == newEvent)
+                {
+                    dropdown.value = i;
+                    break;
+                }
+            }
+        }
     }
 
     public override void clearData()
     {
-        throw new NotImplementedException();
+        refresh();
     }
 }

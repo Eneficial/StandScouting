@@ -15,8 +15,8 @@ public class DataStorage : MonoBehaviour {
 	void Start () {
 		//data = new Dictionary<string, string>();
 
-		//Setup required default values, in case weird things happen
-		data.Add("Version", JsonUtility.ToJson(Version));
+		//Setup static values
+		data.Add("Version", "v"+Version[0]+"."+ Version[1] + "." + Version[2]);
         data.Add("ScouterName", "");
 	}
 
@@ -123,6 +123,21 @@ public class DataStorage : MonoBehaviour {
             StreamWriter sw = File.CreateText(Application.persistentDataPath + Path.DirectorySeparatorChar + "data.json");
             sw.Write(wwwRequest.downloadHandler.text);
             sw.Close();
+
+            if (data.CurrentVersion[2] != Version[2])
+            {
+                Debug.Log("Revision Version mismatch.");
+            }
+            if (data.CurrentVersion[1] != Version[1])
+            {
+                Debug.LogWarning("Minor Version mismatch.");
+                uploadResultText.setText("Warning: Minorly out of date. Please update if possible.");
+            }
+            if (data.CurrentVersion[0] != Version[0])
+            {
+                Debug.LogWarning("Major/Year Version mismatch.");
+                uploadResultText.setText("Warning: Majorly out of date. Please update ASAP.");
+            }
         } else
         {
             Debug.LogError(wwwRequest.error);
@@ -138,7 +153,7 @@ public class DataStorage : MonoBehaviour {
 		DirectoryInfo dinfo = new DirectoryInfo(Application.persistentDataPath);
         
 		foreach (FileInfo file in dinfo.GetFiles()) {
-			if (file.Name.StartsWith (".") && !file.Extension.Equals(".txt"))
+			if (file.Name.StartsWith (".") || !file.Extension.Equals(".txt"))
 				continue;
 
             WWWForm form = new WWWForm();
@@ -163,11 +178,11 @@ public class DataStorage : MonoBehaviour {
 			}
 
 
-            WWW wwwRequest = new WWW(serverBaseURL+"/submit.php", form);
+            WWW wwwRequest = new WWW(serverBaseURL+"/api/v1/submit.php", form);
             yield return wwwRequest;
 
             if (wwwRequest.error != null) {
-                Debug.Log(wwwRequest.error);
+                Debug.Log("Error encountered uploading file " + file.Name+". Error: " + wwwRequest.error + " Additional Data: " + wwwRequest.text);
                 uploadResultText.setText("Error encountered uploading file " + file.Name);
                 continue;
             }
