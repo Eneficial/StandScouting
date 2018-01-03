@@ -9,16 +9,15 @@ public class DataStorage : MonoBehaviour {
 	public Dictionary<string,string> data = new Dictionary<string, string>();
 	public Dictionary<string,DataInput> inputs = new Dictionary<string, DataInput> ();
 	public string serverBaseURL = "";
-    public string Version = "v1.1";
+    public string[] Version = { "2017", "1", "0" };
     public ResultText uploadResultText;
 	// Use this for initialization
 	void Start () {
 		//data = new Dictionary<string, string>();
 
-		//Setup required default values, in case weird things happen
-		data.Add("Version", Version);
-		data.Add("ScouterName", "");
-		data.Add("TeamNumber", "0");
+		//Setup static values
+		data.Add("Version", "v"+Version[0]+"."+ Version[1] + "." + Version[2]);
+        data.Add("ScouterName", "");
 	}
 
 	public bool addData(string key, string value, bool overwrite) {
@@ -84,13 +83,18 @@ public class DataStorage : MonoBehaviour {
 		}
 		using (StreamWriter sw = File.CreateText (filePath)) {
 			foreach (KeyValuePair<string,string> kvp in data) {
-				if (inputs.ContainsKey (kvp.Key) && clear && kvp.Key != "ScouterName" && kvp.Key != "Version")
+				if (inputs.ContainsKey (kvp.Key) && clear && !isStaticKey(kvp.Key))
 					inputs [kvp.Key].clearData();
 				sw.WriteLine (kvp.Key + ";" + kvp.Value.Replace(';',':'));
 			}
 		}
 		return filePath;
 	}
+
+    private bool isStaticKey(string key)
+    {
+        return key == "ScouterName" || key == "Version" || key == "EventKey";
+    }
 
 	public void sync() {
         StartCoroutine(downloadJSON());
@@ -100,26 +104,56 @@ public class DataStorage : MonoBehaviour {
     /**
      * Downloads data from the scouting server, for example version info and event and team lists.
      **/
-     IEnumerable downloadJSON()
+    public IEnumerator downloadJSON()
     {
-        UnityWebRequest wwwRequest = UnityWebRequest.Get(serverBaseURL+"/api/v1/syncDownload.php");
+        Debug.Log("Starting download of JSON");
+        UnityWebRequest wwwRequest = UnityWebRequest.Get(serverBaseURL + "/api/v1/syncDownload.php");
         yield return wwwRequest.SendWebRequest();
 
-        if (wwwRequest.error != null)
+        Debug.Log("Download Completed.");
+        if (!wwwRequest.isHttpError)
         {
-            object[] data = JsonUtility.FromJson<object[]>(wwwRequest.downloadHandler.text);
+            SyncData data = JsonUtility.FromJson<SyncData>(wwwRequest.downloadHandler.text);
+            GetComponent<EventTeamData>().clearData();
+            GetComponent<EventTeamData>().loadData(data);
+
+            if (File.Exists(Application.persistentDataPath + Path.DirectorySeparatorChar + "data.json"))
+                File.Delete(Application.persistentDataPath + Path.DirectorySeparatorChar + "data.json");
+
+            StreamWriter sw = File.CreateText(Application.persistentDataPath + Path.DirectorySeparatorChar + "data.json");
+            sw.Write(wwwRequest.downloadHandler.text);
+            sw.Close();
+
+            if (data.CurrentVersion[2] != Version[2])
+            {
+                Debug.Log("Revision Version mismatch.");
+            }
+            if (data.CurrentVersion[1] != Version[1])
+            {
+                Debug.LogWarning("Minor Version mismatch.");
+                uploadResultText.setText("Warning: Minorly out of date. Please update if possible.");
+            }
+            if (data.CurrentVersion[0] != Version[0])
+            {
+                Debug.LogWarning("Major/Year Version mismatch.");
+                uploadResultText.setText("Warning: Majorly out of date. Please update ASAP.");
+            }
+        } else
+        {
+            Debug.LogError(wwwRequest.error);
         }
 
+    }
 
         /**
          * Uploads the data to the remote server set in the dataPOSTurl variable
          * Returns true if the upload is successful, false if not.
          **/
-        IEnumerator uploadData() {
+        public IEnumerator uploadData() {
 		DirectoryInfo dinfo = new DirectoryInfo(Application.persistentDataPath);
         
 		foreach (FileInfo file in dinfo.GetFiles()) {
-			if (file.Name.StartsWith (".") && !file.Extension.Equals(".txt"))
+			if (file.Name.StartsWith (".") || !file.Extension.Equals(".txt"))
 				continue;
 
             WWWForm form = new WWWForm();
@@ -144,11 +178,11 @@ public class DataStorage : MonoBehaviour {
 			}
 
 
-            WWW wwwRequest = new WWW(dataPOSTurl, form);
+            WWW wwwRequest = new WWW(serverBaseURL+"/api/v1/submit.php", form);
             yield return wwwRequest;
 
             if (wwwRequest.error != null) {
-                Debug.Log(wwwRequest.error);
+                Debug.Log("Error encountered uploading file " + file.Name+". Error: " + wwwRequest.error + " Additional Data: " + wwwRequest.text);
                 uploadResultText.setText("Error encountered uploading file " + file.Name);
                 continue;
             }
@@ -165,4 +199,12 @@ public class DataStorage : MonoBehaviour {
             }
 		}
 	}
+}
+
+[System.Serializable]
+public class SyncData
+{
+    public string[] CurrentVersion;
+    public EventData[] Events;
+    public EventTeamList[] TeamsByEvent;
 }

@@ -31,6 +31,11 @@ public class FilePicker : MonoBehaviour {
 		if (dropdown.value == 0 || dropdown.options[dropdown.value].text == ".DS_Store")
 			return;
 		FileInfo tmp_file = new FileInfo (Application.persistentDataPath + Path.DirectorySeparatorChar + dropdown.captionText.text);
+        if (!file.Exists)
+        {
+            dropdown.value = 0;
+            return;
+        }
 		if (tmp_file.Equals(file))
 			return;
 		file = tmp_file;
@@ -55,6 +60,7 @@ public class FilePicker : MonoBehaviour {
 	}
 
 	public string getStringFromFile(FileInfo file) {
+        if (!file.Exists) return "File not found.";
 		StreamReader sr = file.OpenText();
 		string data = sr.ReadToEnd ();
 		sr.Close ();
