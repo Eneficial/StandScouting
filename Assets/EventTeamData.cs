@@ -62,6 +62,7 @@ public class EventTeamData : MonoBehaviour {
             foreach (string mi in ms.Matches)
             {
                 string[] parts = mi.Split('_');
+                if (parts.Length != 2) continue;
                 if (parts[1].IndexOf("qm") == -1) continue;
                 matchNumbers.Add(int.Parse(parts[1].Substring(2)));
             }
