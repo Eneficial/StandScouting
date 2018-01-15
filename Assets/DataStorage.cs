@@ -140,7 +140,7 @@ public class DataStorage : MonoBehaviour {
             }
         } else
         {
-            Debug.LogError(wwwRequest.error);
+            Debug.LogError("Code: "+wwwRequest.responseCode+" Error: "+wwwRequest.error);
         }
 
     }
@@ -177,9 +177,10 @@ public class DataStorage : MonoBehaviour {
 				}
 			}
 
-
+            Debug.Log("Creating request");
             WWW wwwRequest = new WWW(serverBaseURL+"/api/v1/submit.php", form);
             yield return wwwRequest;
+            Debug.Log("Request complete.");
 
             if (wwwRequest.error != null) {
                 Debug.Log("Error encountered uploading file " + file.Name+". Error: " + wwwRequest.error + " Additional Data: " + wwwRequest.text);
@@ -207,4 +208,5 @@ public class SyncData
     public string[] CurrentVersion;
     public EventData[] Events;
     public EventTeamList[] TeamsByEvent;
+    public MatchSync[] EventMatches;
 }

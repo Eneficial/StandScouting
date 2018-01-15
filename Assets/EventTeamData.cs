@@ -10,8 +10,11 @@ public class EventTeamData : MonoBehaviour {
 
     private Dictionary<string, Dictionary<string, TeamInfo>> teamAtEventData = new Dictionary<string, Dictionary<string, TeamInfo>>();
 
+    private Dictionary<EventData, Dictionary<TeamInfo, int[]>> matchData = new Dictionary<EventData, Dictionary<TeamInfo, int[]>>();
+
     public EventDropdown eventDropdown;
     public TeamDropdown teamDropdown;
+    public MatchDropdown matchDropdown;
 
     public void Start()
     {
@@ -51,9 +54,25 @@ public class EventTeamData : MonoBehaviour {
             }
         }
 
+        foreach (MatchSync ms in dataToLoad.EventMatches)
+        {
+            if (!matchData.ContainsKey(getEvent(ms.EventKey))) { matchData[getEvent(ms.EventKey)] = new Dictionary<TeamInfo, int[]>(); }
+
+            List<int> matchNumbers = new List<int>();
+            foreach (string mi in ms.Matches)
+            {
+                string[] parts = mi.Split('_');
+                if (parts[1].IndexOf("qm") == -1) continue;
+                matchNumbers.Add(int.Parse(parts[1].Substring(2)));
+            }
+            matchNumbers.Sort();
+            matchData[getEvent(ms.EventKey)][getTeam("frc" + ms.TeamNumber, ms.EventKey)] = matchNumbers.ToArray();
+        }
+
+
         if (eventDropdown != null) eventDropdown.refresh();
         if (teamDropdown != null) teamDropdown.refresh();
-        else Debug.Log("EJLKE");
+        if (matchDropdown != null) matchDropdown.refresh();
     }
 
     public EventData[] getEvents()
@@ -95,6 +114,13 @@ public class EventTeamData : MonoBehaviour {
         return teamAtEventData[eventKey][teamKey];
     }
 
+    public int[] getMatches(TeamInfo team, EventData eventData)
+    {
+        if (!matchData.ContainsKey(eventData)) return new int[] { -1 };
+        if (!matchData[eventData].ContainsKey(team)) return new int[] { -2 };
+        return matchData[eventData][team];
+    }
+
     public EventData getSelectedEvent()
     {
         if (eventDropdown != null)
@@ -103,6 +129,19 @@ public class EventTeamData : MonoBehaviour {
             if (eventData.ContainsKey(eventKey))
             {
                 return eventData[eventKey];
+            }
+        }
+        return null;
+    }
+
+    public TeamInfo getSelectedTeam()
+    {
+        if (teamDropdown != null)
+        {
+            string teamKey = "frc" + teamDropdown.GetComponent<Dropdown>().captionText.text.Split(' ')[0];
+            if (teamAtEventData[getSelectedEvent().key].ContainsKey(teamKey))
+            {
+                return teamAtEventData[getSelectedEvent().key][teamKey];
             }
         }
         return null;
@@ -126,21 +165,21 @@ public class EventTeamData : MonoBehaviour {
 [System.Serializable]
 public class EventData
 {
-    public string city;
-    public string country;
-    public DistrictInfo district;
-    public string end_date;
+    //public string city;
+    //public string country;
+    //public DistrictInfo district;
+    //public string end_date;
     public string event_code;
-    public string event_type;
+    public int event_type;
     public string key;
     public string name;
-    public string start_date;
-    public string year;
+    //public string start_date;
+    public int year;
 
-    public override string ToString()
-    {
-        return "City: " + city + " Country: " + country + " District Abbr:" + district.abbreviation + " District Name: " + district.display_name + " District Key: " + district.key + " District Year: " + district.year + " End Date: " + end_date + " Event Code: " + event_code + " Event Type: " + event_type + " Key: " + key + " Name: " + name + " Start Date: " + start_date + " Year: " + year;
-    }
+    //public override string ToString()
+    //{
+    //    return "City: " + city + " Country: " + country + " District Abbr:" + district.abbreviation + " District Name: " + district.display_name + " District Key: " + district.key + " District Year: " + district.year + " End Date: " + end_date + " Event Code: " + event_code + " Event Type: " + event_type + " Key: " + key + " Name: " + name + " Start Date: " + start_date + " Year: " + year;
+    //}
 }
 
 [System.Serializable]
@@ -153,18 +192,18 @@ public class EventTeamList
 [System.Serializable]
 public class TeamInfo
 {
-    public string city;
-    public string country;
+    //public string city;
+    //public string country;
     public string key;
-    public string name;
+    //public string name;
     public string nickname;
-    public string state_prov;
+    //public string state_prov;
     public int team_number;
 
-    public override string ToString()
-    {
-        return "City: " + city + " Country: " + country + " Key: " + key + " Name: " + name + " Nickname: " + nickname + " State/Prov: " + state_prov + " Team Number: " + team_number;
-    }
+    //public override string ToString()
+    //{
+    //    return "City: " + city + " Country: " + country + " Key: " + key + " Name: " + name + " Nickname: " + nickname + " State/Prov: " + state_prov + " Team Number: " + team_number;
+    //}
 }
 
 [System.Serializable]
@@ -174,4 +213,21 @@ public class DistrictInfo
     public string display_name;
     public string key;
     public int year;
+}
+
+[System.Serializable]
+public class MatchSync
+{
+    public string EventKey;
+    public int TeamNumber;
+    public string[] Matches;
+}
+
+[System.Serializable]
+public class AllianceInfo
+{
+    //public string[] dq_team_keys;
+    //public int score;
+    //public string[] surrogate_team_keys;
+    //public string[] team_keys;
 }
