@@ -38,14 +38,10 @@ public class DataStorageEditor : Editor {
 		if (GUILayout.Button ("Click to save to file and clear!")) {
 			StatusMessage = "Data saved to: " + Script.saveToFile (true);
 		}
-        if (GUILayout.Button("Click to download JSON."))
+        if (GUILayout.Button("Click to Sync."))
         {
-            Script.StartCoroutine(Script.downloadJSON());
+            Script.StartCoroutine(Script.syncThread());
         }
-		if (GUILayout.Button ("Click to upload data!")) {
-			Script.uploadData();
-			StatusMessage = "Data Uploading...";
-		}
 		GUILayout.Label (StatusMessage);
 	}
 }

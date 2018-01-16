@@ -31,9 +31,18 @@ public class FilePicker : MonoBehaviour {
 		if (dropdown.value == 0 || dropdown.options[dropdown.value].text == ".DS_Store")
 			return;
 		FileInfo tmp_file = new FileInfo (Application.persistentDataPath + Path.DirectorySeparatorChar + dropdown.captionText.text);
-        if (!file.Exists)
+        if (file == null)
+        {
+            if (tmp_file.Exists)
+            {
+                file = tmp_file;
+                dataViewer.text = getStringFromFile(file);
+            }
+        }
+        if (file != null && !file.Exists)
         {
             dropdown.value = 0;
+            dropdown.RefreshShownValue();
             return;
         }
 		if (tmp_file.Equals(file))

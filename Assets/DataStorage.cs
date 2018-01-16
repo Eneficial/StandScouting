@@ -10,6 +10,8 @@ public class DataStorage : MonoBehaviour {
 	public Dictionary<string,DataInput> inputs = new Dictionary<string, DataInput> ();
 	public string serverBaseURL = "";
     public string[] Version = { "2017", "1", "0" };
+
+    private UnityWebRequest currentRequest;
     public ResultText uploadResultText;
 	// Use this for initialization
 	void Start () {
@@ -20,7 +22,17 @@ public class DataStorage : MonoBehaviour {
         data.Add("ScouterName", "");
 	}
 
-	public bool addData(string key, string value, bool overwrite) {
+    void LateUpdate()
+    {
+        if (currentRequest != null)
+        {
+            float progress = (currentRequest.uploadProgress + currentRequest.downloadProgress) / 2;
+            Debug.Log(progress);
+            uploadResultText.setText("Request progress: " + progress.ToString("P2"));
+        }
+    }
+
+    public bool addData(string key, string value, bool overwrite) {
 		try {
 			data.Add (key, value);
 			return true;
@@ -96,24 +108,19 @@ public class DataStorage : MonoBehaviour {
         return key == "ScouterName" || key == "Version" || key == "EventKey";
     }
 
-	public void sync() {
-        StartCoroutine(downloadJSON());
-		StartCoroutine (uploadData());
-	}
+    public void sync() { StartCoroutine(syncThread()); }
+	public IEnumerator syncThread() {
 
-    /**
-     * Downloads data from the scouting server, for example version info and event and team lists.
-     **/
-    public IEnumerator downloadJSON()
-    {
         Debug.Log("Starting download of JSON");
-        UnityWebRequest wwwRequest = UnityWebRequest.Get(serverBaseURL + "/api/v1/syncDownload.php");
-        yield return wwwRequest.SendWebRequest();
+        UnityWebRequest wwwDownloadRequest = UnityWebRequest.Get(serverBaseURL + "/api/v1/syncDownload.php");
+        currentRequest = wwwDownloadRequest;
+        yield return wwwDownloadRequest.SendWebRequest();
+        currentRequest = null;
 
         Debug.Log("Download Completed.");
-        if (!wwwRequest.isHttpError)
+        if (!wwwDownloadRequest.isHttpError)
         {
-            SyncData data = JsonUtility.FromJson<SyncData>(wwwRequest.downloadHandler.text);
+            SyncData data = JsonUtility.FromJson<SyncData>(wwwDownloadRequest.downloadHandler.text);
             GetComponent<EventTeamData>().clearData();
             GetComponent<EventTeamData>().loadData(data);
 
@@ -121,7 +128,7 @@ public class DataStorage : MonoBehaviour {
                 File.Delete(Application.persistentDataPath + Path.DirectorySeparatorChar + "data.json");
 
             StreamWriter sw = File.CreateText(Application.persistentDataPath + Path.DirectorySeparatorChar + "data.json");
-            sw.Write(wwwRequest.downloadHandler.text);
+            sw.Write(wwwDownloadRequest.downloadHandler.text);
             sw.Close();
 
             if (data.CurrentVersion[2] != Version[2])
@@ -140,16 +147,9 @@ public class DataStorage : MonoBehaviour {
             }
         } else
         {
-            Debug.LogError("Code: "+wwwRequest.responseCode+" Error: "+wwwRequest.error);
+            Debug.LogError("Code: "+wwwDownloadRequest.responseCode+" Error: "+wwwDownloadRequest.error);
         }
 
-    }
-
-        /**
-         * Uploads the data to the remote server set in the dataPOSTurl variable
-         * Returns true if the upload is successful, false if not.
-         **/
-        public IEnumerator uploadData() {
 		DirectoryInfo dinfo = new DirectoryInfo(Application.persistentDataPath);
         
 		foreach (FileInfo file in dinfo.GetFiles()) {
@@ -178,17 +178,19 @@ public class DataStorage : MonoBehaviour {
 			}
 
             Debug.Log("Creating request");
-            WWW wwwRequest = new WWW(serverBaseURL+"/api/v1/submit.php", form);
-            yield return wwwRequest;
+            UnityWebRequest wwwSubmitRequest = UnityWebRequest.Post(serverBaseURL+"/api/v1/submit.php", form);
+            currentRequest = wwwSubmitRequest;
+            yield return wwwSubmitRequest.SendWebRequest();
+            currentRequest = null;
             Debug.Log("Request complete.");
 
-            if (wwwRequest.error != null) {
-                Debug.Log("Error encountered uploading file " + file.Name+". Error: " + wwwRequest.error + " Additional Data: " + wwwRequest.text);
+            if (wwwSubmitRequest.error != null) {
+                Debug.Log("Error encountered uploading file " + file.Name+". Error: " + wwwSubmitRequest.error + " Additional Data: " + wwwSubmitRequest.downloadHandler.text);
                 uploadResultText.setText("Error encountered uploading file " + file.Name);
                 continue;
             }
             else {
-                Debug.Log("Form upload complete for file " + file.Name + " Response: " + wwwRequest.text);
+                Debug.Log("Form upload complete for file " + file.Name + " Response: " + wwwSubmitRequest.downloadHandler.text);
                 uploadResultText.setText("Form upload complete for file " + file.Name);
                 string path = Application.persistentDataPath + Path.DirectorySeparatorChar + "uploaded" + Path.DirectorySeparatorChar + file.Name.Split('-')[0].Split('.')[0];
                 if (!Directory.Exists(path))
