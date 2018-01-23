@@ -4,6 +4,9 @@ using System.Collections.Generic;
 using System.IO;
 using System;
 using UnityEngine.Networking;
+using System.Collections.Specialized;
+using System.Net;
+using System.Text;
 
 public class DataStorage : MonoBehaviour {
 	public Dictionary<string,string> data = new Dictionary<string, string>();
@@ -11,8 +14,12 @@ public class DataStorage : MonoBehaviour {
 	public string serverBaseURL = "";
     public string[] Version = { "2017", "1", "0" };
 
-    private UnityWebRequest currentRequest;
+    private WebClient client = new WebClient();
+
+    private UnityWebRequest currentDownloadRequest;
+    private UnityWebRequest currentUploadRequest;
     public ResultText uploadResultText;
+    public ResultText downloadResultText;
 	// Use this for initialization
 	void Start () {
 		//data = new Dictionary<string, string>();
@@ -24,11 +31,16 @@ public class DataStorage : MonoBehaviour {
 
     void LateUpdate()
     {
-        if (currentRequest != null)
+        if (currentDownloadRequest != null)
         {
-            float progress = (currentRequest.uploadProgress + currentRequest.downloadProgress) / 2;
-            Debug.Log(progress);
-            uploadResultText.setText("Request progress: " + progress.ToString("P2"));
+            float progress = (currentDownloadRequest.uploadProgress + currentDownloadRequest.downloadProgress)/2;
+            downloadResultText.setText("Download progress: " + progress.ToString("P2"));
+        }
+
+        if (currentUploadRequest != null)
+        {
+            float progress = (currentUploadRequest.uploadProgress + currentUploadRequest.downloadProgress)/2;
+            uploadResultText.setText("Upload progress: " + progress.ToString("P2"));
         }
     }
 
@@ -108,14 +120,18 @@ public class DataStorage : MonoBehaviour {
         return key == "ScouterName" || key == "Version" || key == "EventKey";
     }
 
-    public void sync() { StartCoroutine(syncThread()); }
-	public IEnumerator syncThread() {
+    public void sync() {
+        StartCoroutine(downloadJson());
+        StartCoroutine(uploadData());
+    }
+
+    public IEnumerator downloadJson() {
 
         Debug.Log("Starting download of JSON");
         UnityWebRequest wwwDownloadRequest = UnityWebRequest.Get(serverBaseURL + "/api/v1/syncDownload.php");
-        currentRequest = wwwDownloadRequest;
+        currentDownloadRequest = wwwDownloadRequest;
         yield return wwwDownloadRequest.SendWebRequest();
-        currentRequest = null;
+        currentDownloadRequest = null;
 
         Debug.Log("Download Completed.");
         if (!wwwDownloadRequest.isHttpError)
@@ -147,62 +163,60 @@ public class DataStorage : MonoBehaviour {
             }
         } else
         {
-            Debug.LogError("Code: "+wwwDownloadRequest.responseCode+" Error: "+wwwDownloadRequest.error);
+            downloadResultText.setText("Error encountered downloading from server.");
+            Debug.LogError("Code: " + wwwDownloadRequest.responseCode + " Error: " + wwwDownloadRequest.error);
         }
-
+        wwwDownloadRequest.Dispose();
+    }
+    public IEnumerator uploadData() {
 		DirectoryInfo dinfo = new DirectoryInfo(Application.persistentDataPath);
         
 		foreach (FileInfo file in dinfo.GetFiles()) {
 			if (file.Name.StartsWith (".") || !file.Extension.Equals(".txt"))
 				continue;
 
-            WWWForm form = new WWWForm();
-            form.AddField("App", "stand");
+            NameValueCollection formData = new NameValueCollection();
+            formData["App"] = "stand";
             // Open the stream and read it back.
             using (StreamReader sr = file.OpenText ()) {
 				string s = "";
 				while ((s = sr.ReadLine ()) != null) {
 					string[] data = s.Split (';');
-                    string[] tmpData = data[1].Split(',');
-                    if (tmpData.Length > 1)
-                    {
-                        string newData = tmpData[0];
-                        for (int i =1; i < tmpData.Length;i++)
-                            newData = newData + "." + tmpData[i];
-                        data[1] = newData;
-                    }
+
 					Debug.Log (file.Name + ":" + data [0] + " " + data [1]);
                     uploadResultText.setText(file.Name + ":" + data[0] + " " + data[1]);
-                    form.AddField(data[0], data[1]);
-				}
+                    formData[data[0]] = data[1];
+                }
 			}
 
             Debug.Log("Creating request");
-            UnityWebRequest wwwSubmitRequest = UnityWebRequest.Post(serverBaseURL+"/api/v1/submit.php", form);
-            currentRequest = wwwSubmitRequest;
-            yield return wwwSubmitRequest.SendWebRequest();
-            currentRequest = null;
-            Debug.Log("Request complete.");
+            try
+            {
+                client.UploadValuesAsync(new Uri(serverBaseURL + "/api/v1/submit.php"), formData);
+            
 
-            if (wwwSubmitRequest.error != null) {
-                Debug.Log("Error encountered uploading file " + file.Name+". Error: " + wwwSubmitRequest.error + " Additional Data: " + wwwSubmitRequest.downloadHandler.text);
-                uploadResultText.setText("Error encountered uploading file " + file.Name);
-                continue;
-            }
-            else {
-                Debug.Log("Form upload complete for file " + file.Name + " Response: " + wwwSubmitRequest.downloadHandler.text);
-                uploadResultText.setText("Form upload complete for file " + file.Name);
+
+                Debug.Log("Form upload begun for file " + file.Name);
+                uploadResultText.setText("Form upload begun for file " + file.Name);
                 string path = Application.persistentDataPath + Path.DirectorySeparatorChar + "uploaded" + Path.DirectorySeparatorChar + file.Name.Split('-')[0].Split('.')[0];
                 if (!Directory.Exists(path))
                     Directory.CreateDirectory(path);
                 if (!File.Exists(path + Path.DirectorySeparatorChar + file.Name))
                     file.MoveTo(path + Path.DirectorySeparatorChar + file.Name);
-                yield return new WaitForSeconds(0.25f);
-                continue;
+
+            } catch (WebException e)
+            {
+                Debug.LogWarning("WebRequest Errored. Info: " + e.ToString());
             }
-		}
+            Debug.Log("Request complete.");
+
+            
+
+            yield return new WaitForSeconds(0.25f);
+        }
 	}
 }
+
 
 [System.Serializable]
 public class SyncData

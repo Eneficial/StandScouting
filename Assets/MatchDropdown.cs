@@ -59,7 +59,6 @@ public class MatchDropdown : DataInput {
             options.Add(new Dropdown.OptionData(matchNumber.ToString()));
         }
         clear();
-        Debug.Log(options.Count);
         dropdown.options = options;
         dropdown.RefreshShownValue();
         setup = true;
