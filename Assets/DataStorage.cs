@@ -17,7 +17,7 @@ public class DataStorage : MonoBehaviour {
     private WebClient client = new WebClient();
 
     private UnityWebRequest currentDownloadRequest;
-    private UnityWebRequest currentUploadRequest;
+    private WWW currentUploadRequest;
     public ResultText uploadResultText;
     public ResultText downloadResultText;
 	// Use this for initialization
@@ -35,6 +35,12 @@ public class DataStorage : MonoBehaviour {
         {
             float progress = (currentDownloadRequest.uploadProgress + currentDownloadRequest.downloadProgress) / 2;
             downloadResultText.setText("Download progress: " + progress.ToString("P2"));
+
+        }
+        if (currentUploadRequest != null)
+        {
+            float progress = (currentUploadRequest.uploadProgress + currentUploadRequest.progress) / 2;
+            uploadResultText.setText("Upload progress: " + progress.ToString("P2"));
 
         }
     }
@@ -170,8 +176,8 @@ public class DataStorage : MonoBehaviour {
 			if (file.Name.StartsWith (".") || !file.Extension.Equals(".txt"))
 				continue;
 
-            NameValueCollection formData = new NameValueCollection();
-            formData["App"] = "stand";
+            WWWForm formData = new WWWForm();
+            formData.AddField("App","stand");
             // Open the stream and read it back.
             using (StreamReader sr = file.OpenText ()) {
 				string s = "";
@@ -180,29 +186,30 @@ public class DataStorage : MonoBehaviour {
 
 					Debug.Log (file.Name + ":" + data [0] + " " + data [1]);
                     uploadResultText.setText(file.Name + ":" + data[0] + " " + data[1]);
-                    formData[data[0]] = data[1];
+                    formData.AddField(data[0],data[1]);
                 }
 			}
-
             Debug.Log("Creating request");
-            try
+            WWW uploadRequest = new WWW(serverBaseURL + "/api/v1/submit.php", formData);
+            Debug.Log("Form upload begun for file " + file.Name);
+            currentUploadRequest = uploadRequest;
+            Debug.Log(uploadRequest.url);
+            yield return uploadRequest;
+            if (uploadRequest.error != null)
             {
-                client.UploadValuesAsync(new Uri(serverBaseURL + "/api/v1/submit.php"), formData);
-            
-
-
-                Debug.Log("Form upload begun for file " + file.Name);
-                uploadResultText.setText("Form upload begun for file " + file.Name);
                 string path = Application.persistentDataPath + Path.DirectorySeparatorChar + "uploaded" + Path.DirectorySeparatorChar + file.Name.Split('-')[0].Split('.')[0];
                 if (!Directory.Exists(path))
                     Directory.CreateDirectory(path);
                 if (!File.Exists(path + Path.DirectorySeparatorChar + file.Name))
                     file.MoveTo(path + Path.DirectorySeparatorChar + file.Name);
-
-            } catch (WebException e)
+            } else
             {
-                Debug.LogWarning("WebRequest Errored. Info: " + e.ToString());
+                uploadResultText.setText("An error has occured.");
+                Debug.LogError("Error uploading file " + file.Name + " Error Code: " + uploadRequest.error);
+                continue;
             }
+
+            
             Debug.Log("Request complete.");
 
             
