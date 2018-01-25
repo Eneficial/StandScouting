@@ -8,6 +8,8 @@ public class DataToggle : DataInput {
 
     public DataStorage ds;
     private Toggle toggle;
+    public string UncheckedResponse = "False";
+    public string CheckedResponse = "True";
 
     public void Start()
     {
@@ -32,6 +34,6 @@ public class DataToggle : DataInput {
 
     public void Update()
     {
-        ds.addData(this.gameObject.name, toggle.isOn.ToString(), true, this);
+        ds.addData(this.gameObject.name, (toggle.isOn ? CheckedResponse : UncheckedResponse), true, this);
     }
 }

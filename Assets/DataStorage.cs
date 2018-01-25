@@ -33,14 +33,9 @@ public class DataStorage : MonoBehaviour {
     {
         if (currentDownloadRequest != null)
         {
-            float progress = (currentDownloadRequest.uploadProgress + currentDownloadRequest.downloadProgress)/2;
+            float progress = (currentDownloadRequest.uploadProgress + currentDownloadRequest.downloadProgress) / 2;
             downloadResultText.setText("Download progress: " + progress.ToString("P2"));
-        }
 
-        if (currentUploadRequest != null)
-        {
-            float progress = (currentUploadRequest.uploadProgress + currentUploadRequest.downloadProgress)/2;
-            uploadResultText.setText("Upload progress: " + progress.ToString("P2"));
         }
     }
 
