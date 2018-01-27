@@ -4,17 +4,12 @@ using System.Collections.Generic;
 using System.IO;
 using System;
 using UnityEngine.Networking;
-using System.Collections.Specialized;
-using System.Net;
-using System.Text;
 
 public class DataStorage : MonoBehaviour {
 	public Dictionary<string,string> data = new Dictionary<string, string>();
 	public Dictionary<string,DataInput> inputs = new Dictionary<string, DataInput> ();
 	public string serverBaseURL = "";
     public string[] Version = { "2017", "1", "0" };
-
-    private WebClient client = new WebClient();
 
     private UnityWebRequest currentDownloadRequest;
     private UnityWebRequest currentUploadRequest;
@@ -198,11 +193,7 @@ public class DataStorage : MonoBehaviour {
             yield return uploadRequest.SendWebRequest();
             if (!uploadRequest.isHttpError)
             {
-                string path = Application.persistentDataPath + Path.DirectorySeparatorChar + "uploaded" + Path.DirectorySeparatorChar + file.Name.Split('-')[0].Split('.')[0];
-                if (!Directory.Exists(path))
-                    Directory.CreateDirectory(path);
-                if (!File.Exists(path + Path.DirectorySeparatorChar + file.Name))
-                    file.MoveTo(path + Path.DirectorySeparatorChar + file.Name);
+                file.Delete();
             } else
             {
                 uploadResultText.setText("An error has occured.");

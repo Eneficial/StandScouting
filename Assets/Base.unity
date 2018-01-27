@@ -5662,8 +5662,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ds: {fileID: 768052562}
-  UncheckedResponse: False
-  CheckedResponse: True
+  UncheckedResponse: Showed Up
+  CheckedResponse: No Show
 --- !u!114 &574639288
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7504,7 +7504,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 768052560}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.1043744, y: 1.7929481, z: -6.7132773}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -7521,7 +7521,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 97393e720849d45dcb6f3ff0c5634a71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  serverBaseURL: http://orfscoutingtesting.azurewebsites.net
+  serverBaseURL: http://orfscoutingservice.azurewebsites.net
   Version:
   - 2018
   - 1
