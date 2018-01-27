@@ -3940,8 +3940,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ds: {fileID: 768052562}
-  UncheckedResponse: False
-  CheckedResponse: True
+  UncheckedResponse: Unused
+  CheckedResponse: Used
 --- !u!114 &410845079
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5497,8 +5497,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ds: {fileID: 768052562}
-  UncheckedResponse: False
-  CheckedResponse: True
+  UncheckedResponse: Unused
+  CheckedResponse: Used
 --- !u!114 &541588835
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6272,8 +6272,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ds: {fileID: 768052562}
-  UncheckedResponse: False
-  CheckedResponse: True
+  UncheckedResponse: Did not place
+  CheckedResponse: Placed
 --- !u!114 &615650545
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7524,8 +7524,8 @@ MonoBehaviour:
   serverBaseURL: http://orfscoutingtesting.azurewebsites.net
   Version:
   - 2018
-  - 0
   - 1
+  - 0
   - 
   uploadResultText: {fileID: 1046550211}
   downloadResultText: {fileID: 913275844}
@@ -7610,8 +7610,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ds: {fileID: 768052562}
-  UncheckedResponse: False
-  CheckedResponse: True
+  UncheckedResponse: Did not die on field
+  CheckedResponse: Died on field
 --- !u!114 &772479851
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10042,8 +10042,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ds: {fileID: 768052562}
-  UncheckedResponse: False
-  CheckedResponse: True
+  UncheckedResponse: Unused
+  CheckedResponse: Used
 --- !u!114 &1165887288
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11623,8 +11623,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ds: {fileID: 768052562}
-  UncheckedResponse: False
-  CheckedResponse: True
+  UncheckedResponse: Did not place
+  CheckedResponse: Placed
 --- !u!114 &1325334352
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12538,8 +12538,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ds: {fileID: 768052562}
-  UncheckedResponse: False
-  CheckedResponse: True
+  UncheckedResponse: Did not cross
+  CheckedResponse: Crossed
 --- !u!114 &1494699665
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -14319,8 +14319,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ds: {fileID: 768052562}
-  UncheckedResponse: False
-  CheckedResponse: True
+  UncheckedResponse: No Alliance unpressed
+  CheckedResponse: No Alliance PRESSED
 --- !u!114 &1730240678
 MonoBehaviour:
   m_ObjectHideFlags: 0

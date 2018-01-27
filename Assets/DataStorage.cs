@@ -17,7 +17,7 @@ public class DataStorage : MonoBehaviour {
     private WebClient client = new WebClient();
 
     private UnityWebRequest currentDownloadRequest;
-    private WWW currentUploadRequest;
+    private UnityWebRequest currentUploadRequest;
     public ResultText uploadResultText;
     public ResultText downloadResultText;
 	// Use this for initialization
@@ -33,14 +33,13 @@ public class DataStorage : MonoBehaviour {
     {
         if (currentDownloadRequest != null)
         {
-            float progress = (currentDownloadRequest.uploadProgress + currentDownloadRequest.downloadProgress) / 2;
-            downloadResultText.setText("Download progress: " + progress.ToString("P2"));
+            downloadResultText.setText("Download JSON progress: " + currentDownloadRequest.downloadProgress.ToString("P2"));
 
         }
         if (currentUploadRequest != null)
         {
-            float progress = (currentUploadRequest.uploadProgress + currentUploadRequest.progress) / 2;
-            uploadResultText.setText("Upload progress: " + progress.ToString("P2"));
+            //float progress = (currentUploadRequest.uploadProgress + currentUploadRequest.progress) / 2;
+            uploadResultText.setText("Upload data progress: " + currentUploadRequest.uploadProgress.ToString("P2"));
 
         }
     }
@@ -176,8 +175,8 @@ public class DataStorage : MonoBehaviour {
 			if (file.Name.StartsWith (".") || !file.Extension.Equals(".txt"))
 				continue;
 
-            WWWForm formData = new WWWForm();
-            formData.AddField("App","stand");
+            Dictionary<string, string> formData = new Dictionary<string, string>();
+            formData["App"] = "stand";
             // Open the stream and read it back.
             using (StreamReader sr = file.OpenText ()) {
 				string s = "";
@@ -186,16 +185,18 @@ public class DataStorage : MonoBehaviour {
 
 					Debug.Log (file.Name + ":" + data [0] + " " + data [1]);
                     uploadResultText.setText(file.Name + ":" + data[0] + " " + data[1]);
-                    formData.AddField(data[0],data[1]);
+                    if (data[1] == "") data[1] = " ";
+                    formData[data[0]] = data[1];
                 }
 			}
             Debug.Log("Creating request");
-            WWW uploadRequest = new WWW(serverBaseURL + "/api/v1/submit.php", formData);
+            UnityWebRequest uploadRequest = UnityWebRequest.Post(serverBaseURL + "/api/v1/submit.php", formData);
             Debug.Log("Form upload begun for file " + file.Name);
             currentUploadRequest = uploadRequest;
             Debug.Log(uploadRequest.url);
-            yield return uploadRequest;
-            if (uploadRequest.error != null)
+            uploadRequest.chunkedTransfer = false;
+            yield return uploadRequest.SendWebRequest();
+            if (!uploadRequest.isHttpError)
             {
                 string path = Application.persistentDataPath + Path.DirectorySeparatorChar + "uploaded" + Path.DirectorySeparatorChar + file.Name.Split('-')[0].Split('.')[0];
                 if (!Directory.Exists(path))
@@ -205,7 +206,7 @@ public class DataStorage : MonoBehaviour {
             } else
             {
                 uploadResultText.setText("An error has occured.");
-                Debug.LogError("Error uploading file " + file.Name + " Error Code: " + uploadRequest.error);
+                Debug.LogError("Error uploading file " + file.Name + " Error Code: " + uploadRequest.responseCode);
                 continue;
             }
 
@@ -216,6 +217,8 @@ public class DataStorage : MonoBehaviour {
 
             yield return new WaitForSeconds(0.25f);
         }
+        currentUploadRequest = null;
+        uploadResultText.setText("Uploading Complete");
 	}
 }
 
