@@ -112,7 +112,7 @@ public class DataStorage : MonoBehaviour {
 
     private bool isStaticKey(string key)
     {
-        return key == "ScouterName" || key == "Version" || key == "EventKey";
+        return key == "ScouterName" || key == "ScouterTeamNumber" || key == "Version" || key == "EventKey";
     }
 
     public void sync() {
