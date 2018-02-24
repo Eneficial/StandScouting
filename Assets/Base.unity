@@ -9774,15 +9774,23 @@ MonoBehaviour:
   m_Value: 0
   m_Options:
     m_Options:
-    - m_Text: No attempt
+    - m_Text: No Climb - Not Parked
       m_Image: {fileID: 0}
-    - m_Text: Failed attempt
+    - m_Text: No Climb - Parked
       m_Image: {fileID: 0}
-    - m_Text: Assisted 1 robot.
+    - m_Text: Failed Climb
       m_Image: {fileID: 0}
-    - m_Text: Assisted 2 robots.
+    - m_Text: Climbed Alone
       m_Image: {fileID: 0}
-    - m_Text: Climbed Alone.
+    - m_Text: Assisted by another Robot
+      m_Image: {fileID: 0}
+    - m_Text: Climbed + Assisted 1 Robot
+      m_Image: {fileID: 0}
+    - m_Text: Climbed + Assisted 2 Robots
+      m_Image: {fileID: 0}
+    - m_Text: No Climb + Assisted 1 Robot
+      m_Image: {fileID: 0}
+    - m_Text: No Climb + Assisted 2 Robots
       m_Image: {fileID: 0}
   m_OnValueChanged:
     m_PersistentCalls:
@@ -12252,7 +12260,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: No attempt
+  m_Text: No Climb
 --- !u!222 &1386182177
 CanvasRenderer:
   m_ObjectHideFlags: 0
