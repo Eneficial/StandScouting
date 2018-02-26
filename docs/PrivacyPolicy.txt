@@ -1,0 +1,2 @@
+Any data entered into this app may be transmitted to an external server, where the data will be publically visible to anyone who uses the website.
+Device Specific information, including but not limited to IP Address or a Unique Identifier may be logged privately for moderation and diagonistic purposes.
