@@ -142,7 +142,15 @@ public class DataStorage : MonoBehaviour
 
     public void sync()
     {
-        if (pingTest())
+        StartCoroutine(syncRoutine());
+    }
+
+    private bool lastPingTest = false;
+    public IEnumerator syncRoutine()
+    {
+        yield return pingTest();
+
+        if (lastPingTest)
         {
             StartCoroutine(downloadJson());
             StartCoroutine(uploadData());
@@ -153,14 +161,15 @@ public class DataStorage : MonoBehaviour
         }
     }
 
-    private bool pingTest()
+    private IEnumerator pingTest()
     {
         UnityWebRequest pingWebRequest = UnityWebRequest.Get(serverBaseURL + "/api/v1/ping.php");
         pingWebRequest.timeout = 5;
-        pingWebRequest.SendWebRequest();
+        yield return pingWebRequest.SendWebRequest();
         string text = pingWebRequest.downloadHandler.text;
+        Debug.Log(text);
         pingWebRequest.Dispose();
-        return text == "pong";
+        lastPingTest = text == "pong";
     }
 
     public IEnumerator downloadJson()
