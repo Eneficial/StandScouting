@@ -52,6 +52,6 @@ public class TeamDropdown : DataInput
 
     public override void clearData()
     {
-        clear();
+        refresh();
     }
 }
