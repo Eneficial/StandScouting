@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
+using UnityEngine.UI;
 
 [CustomEditor(typeof(DataStorage))]
 public class DataStorageEditor : Editor {
@@ -24,6 +25,14 @@ public class DataStorageEditor : Editor {
         GUILayout.BeginHorizontal("box");
         GUILayout.Label("Download Result Text:");
         Script.downloadResultText = (ResultText)EditorGUILayout.ObjectField(Script.downloadResultText, typeof(ResultText), true);
+        GUILayout.EndHorizontal();
+        GUILayout.BeginHorizontal("box");
+        GUILayout.Label("Save Button:");
+        Script.saveButton = (Button)EditorGUILayout.ObjectField(Script.saveButton, typeof(Button), true);
+        GUILayout.EndHorizontal();
+        GUILayout.BeginHorizontal("box");
+        GUILayout.Label("Before Match Button:");
+        Script.beforeMatchButton = (Button)EditorGUILayout.ObjectField(Script.beforeMatchButton, typeof(Button), true);
         GUILayout.EndHorizontal();
         GUILayout.BeginHorizontal ("box");
 		GUILayout.Label ("Base Server URL:");

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System;
 using UnityEngine.Networking;
+using UnityEngine.UI;
 
 public class DataStorage : MonoBehaviour
 {
@@ -11,6 +12,8 @@ public class DataStorage : MonoBehaviour
     public Dictionary<string, DataInput> inputs = new Dictionary<string, DataInput>();
     public string serverBaseURL = "";
     public string[] Version = { "2017", "1", "0" };
+    public Button saveButton;
+    public Button beforeMatchButton;
 
     private UnityWebRequest currentDownloadRequest;
     private UnityWebRequest currentUploadRequest;
@@ -96,7 +99,10 @@ public class DataStorage : MonoBehaviour
 
     public void saveAndClear()
     {
+        saveButton.interactable = false;
         saveToFile(true);
+        saveButton.interactable = true;
+        beforeMatchButton.onClick.Invoke();
     }
 
     /** 
